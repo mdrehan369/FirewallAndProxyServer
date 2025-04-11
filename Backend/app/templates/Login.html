@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Login To Network</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        form {
+            width: 25vw;
+            height: 30vh;
+            background-color: #f7f7f7;
+            border: 1px solid #e6e6e6;
+            padding: 2%;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            flex-direction: column;
+            justify-content: center;
+            gap: 25px;
+        }
+
+        div {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: start;
+            justify-content: center;
+            gap: 3px;
+        }
+
+        input {
+            width: 100%;
+            padding: 10px 5px;
+            border: 1px solid #c6c6c6;
+            border-radius: 5px;
+        }
+
+        label {
+            font-size: 0.95em;
+            font-weight: 500;
+            color: #383838;
+        }
+
+        button {
+            padding: 10px 8px;
+            font-size: 1.03em;
+            background-color: #383838;
+            color: white;
+            border: 1px solid black;
+            width: 100%;
+            border-radius: 3px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: all;
+            transition-duration: 200ms;
+        }
+
+        button:hover {
+            background-color: transparent;
+            color: #383838;
+        }
+    </style>
+  </head>
+  <body>
+    <form action="">
+      <div>
+        <label for="id">Corporate ID:</label>
+        <input type="text" id="id" name="corporate_id" />
+      </div>
+      <div>
+        <label for="pass">Corporate Password:</label>
+        <input type="password" id="pass" name="corporate_password" />
+      </div>
+      <button>LOGIN</button>
+    </form>
+  </body>
+</html>
