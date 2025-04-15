@@ -8,6 +8,9 @@
         * {
             margin: 0;
             padding: 0;
+            font-family: "Winky Rough", sans-serif;
+            font-optical-sizing: auto;
+            font-style: normal;
         }
 
         body {
@@ -73,10 +76,26 @@
             background-color: transparent;
             color: #383838;
         }
+
+        #error {
+          width: 100%;
+          background-color: rgb(255, 202, 202);
+          color: red;
+          padding: 10px 4px;
+          text-align: center;
+          text-transform: uppercase;
+          font-size: small;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
     </style>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Winky+Rough:ital,wght@0,300..900;1,300..900&display=swap" rel="stylesheet">
   </head>
   <body>
-    <form action="">
+    <form action="/" method="post" >
       <div>
         <label for="id">Corporate ID:</label>
         <input type="text" id="id" name="corporate_id" />
@@ -85,7 +104,10 @@
         <label for="pass">Corporate Password:</label>
         <input type="password" id="pass" name="corporate_password" />
       </div>
-      <button>LOGIN</button>
+      {% if error %}
+        <div id="error">{{error}}</div>
+      {% endif %}
+      <button type="submit">LOGIN</button>
     </form>
   </body>
 </html>

@@ -1,9 +1,9 @@
 from sqlalchemy import String, DateTime, Integer, ForeignKey, Boolean
 from sqlalchemy.orm import mapped_column, relationship
-from .main import Base
+from . import ModelBase
 import datetime
 
-class DbSession(Base):
+class DbSession(ModelBase):
 
     __tablename__ = "sessions"
 

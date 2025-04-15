@@ -1,10 +1,10 @@
 from sqlalchemy import String, DateTime, Integer, ForeignKey, Enum
 from sqlalchemy.orm import mapped_column, relationship
 import datetime
-from main import Base
-from HttpMethod import HttpMethod
+from . import ModelBase
+from .HttpMethod import HttpMethod
 
-class Response(Base):
+class Response(ModelBase):
 
     __tablename__ = "responses"
 

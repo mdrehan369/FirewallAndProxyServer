@@ -2,7 +2,7 @@ from sqlalchemy import String, DateTime
 from sqlalchemy.orm import mapped_column, relationship
 import datetime
 import random
-from main import Base
+from . import ModelBase
 
 def createUniqueIds():
     uuid = ""
@@ -10,7 +10,7 @@ def createUniqueIds():
         uuid += "abcdefghijklmnopqrstuvwxyz"[random.randint(0, 25)]
     return uuid
 
-class Employee(Base):
+class Employee(ModelBase):
 
     __tablename__ = "employees"
 
