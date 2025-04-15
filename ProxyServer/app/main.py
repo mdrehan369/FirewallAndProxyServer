@@ -5,6 +5,7 @@ from termcolor import colored
 from websockets.sync.client import connect
 import json
 import os
+from utils import ad_patterns
 
 from dotenv import load_dotenv
 
@@ -31,6 +32,14 @@ class Server:
         accept = flow.request.headers.get("Accept", "")
         sec_fetch = flow.request.headers.get("Sec-Fetch-Site")
 
+        if(any(p.match(flow.request.pretty_url) for p in ad_patterns)):
+                    flow.response = http.Response.make(
+                    200,
+                    b"",
+                    {"Content-Type": "text/plain"}  # Headers
+                )
+                    print("Blocked ad request:", flow.request.pretty_url)
+
         if "Mozilla" in ua and "text/html" in accept and sec_fetch:
             self.ws.send(json.dumps({ "method": "CHECK_EMPLOYEE_STATUS", "data": { "system_ip": flow.client_conn.address[0] } }))
             isEmployeeLoggedIn = json.loads(self.ws.recv(10))
@@ -42,5 +51,7 @@ class Server:
                 flow.request.scheme = "http"
                 flow.request.path = "/login"
                 flow.request.cookies.add("system_ip", flow.client_conn.address[0])
+            # else:
+
             
 addons=[Server()]
