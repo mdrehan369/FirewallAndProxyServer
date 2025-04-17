@@ -10,6 +10,7 @@ from fastapi.templating import Jinja2Templates
 app = FastAPI()
 
 templates = Jinja2Templates(directory=os.path.join(os.getcwd(), "app/templates"))
+dbHelper = DbHelper()
 
 app.add_middleware(
     CORSMiddleware,
@@ -34,7 +35,6 @@ async def login(req: Request):
 @app.post("/login")
 async def loginPost(req: Request, corporate_id: Annotated[str, Form()], corporate_password: Annotated[str, Form()]):
 
-    dbHelper = DbHelper()
     system_ip = req.cookies.get("system_ip")
     url = req.cookies.get("url")
     response = dbHelper.loginEmployee(corporate_id=corporate_id, corporate_password=corporate_password, system_ip=system_ip)
@@ -44,10 +44,33 @@ async def loginPost(req: Request, corporate_id: Annotated[str, Form()], corporat
     )
     return RedirectResponse(url=url)
 
+@app.get("/logout")
+async def logout(req: Request):
+    system_ip = req.client.host
+    response = dbHelper.getEmployee(system_ip)
+    if response.success:
+        return templates.TemplateResponse(
+            request=req, name="Logout.html", context={ "employee": response.data, "system_ip": system_ip }
+        )
+    return templates.TemplateResponse(
+            request=req, name="Logout.html", context={ "error": response.message }
+        )
+
+@app.post("/logout")
+async def logoutEmployee(req: Request):
+    system_ip = req.client.host
+    response = dbHelper.logoutEmployee(system_ip)
+    if response.success:
+        return templates.TemplateResponse(
+                request=req, name="Logout.html", context={ "success": True }
+            )
+    return templates.TemplateResponse(
+            request=req, name="Logout.html", context={ "error": response.message }
+        )
+
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
     await websocket.accept()
-    dbHelper = DbHelper()
     try:
         while True:
             data = await websocket.receive_text()

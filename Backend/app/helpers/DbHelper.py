@@ -1,4 +1,4 @@
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, update
 from sqlalchemy.orm import sessionmaker
 # from models import Employee, Response, Request, DbSession
 from ..models.DbSession import DbSession
@@ -36,7 +36,7 @@ class DbHelper():
         year = currTime.year
 
         with self.session() as session:
-            existingSession = session.query(DbSession).filter(DbSession.system_ip == system_ip, DbSession.loggedin_at >= f"{year}-{month}-{date} 00:00:00").all()
+            existingSession = session.query(DbSession).filter(DbSession.system_ip == system_ip, DbSession.loggedin_at >= f"{year}-{month}-{date} 00:00:00", DbSession.did_logged_out == False).all()
             print(existingSession)
             if(len(existingSession) == 0):
                 return CustomResponse(success=False, data={ "status": False }).toJson()
@@ -59,3 +59,45 @@ class DbHelper():
             return CustomResponse(success=True, message="Session Created Successfully!", status=201)
             
 
+    def getEmployee(self, system_ip: str):
+        if system_ip == "":
+            return CustomResponse(success=False, message="No IP Given!")
+        
+        currTime = datetime.now()
+        date = currTime.day
+        month = currTime.month
+        year = currTime.year
+        
+        with self.session() as session:
+            dbSession = session.query(DbSession).filter(DbSession.system_ip == system_ip, DbSession.loggedin_at >= f"{year}-{month}-{date} 00:00:00", DbSession.did_logged_out == False).first()
+            if dbSession is None:
+                return CustomResponse(success=False, message="No Session Found!")
+            employee = dbSession.employee
+            if employee is None:
+                return CustomResponse(success=False, message="No Employee Found!")
+            return CustomResponse(data=employee)
+        
+    def logoutEmployee(self, system_ip: str):
+        if system_ip == "":
+            return CustomResponse(success=False, message="No IP Given!")
+        
+        currTime = datetime.now()
+        date = currTime.day
+        month = currTime.month
+        year = currTime.year
+        
+        with self.session() as session:
+            dbSession = session.query(DbSession).filter(DbSession.system_ip == system_ip, DbSession.loggedin_at >= f"{year}-{month}-{date} 00:00:00", DbSession.did_logged_out == False).first()
+
+            if dbSession is None:
+                return CustomResponse(success=False, message="No Employe Found!")
+            session.execute(
+                (
+                    update(DbSession)
+                    .where(DbSession.system_ip == system_ip, DbSession.did_logged_out == False, DbSession.loggedin_at >= datetime(year, month, date))
+                    .values(did_logged_out=True, loggedout_at=datetime.now())
+                    )
+                )
+            
+            session.commit()
+            return CustomResponse()

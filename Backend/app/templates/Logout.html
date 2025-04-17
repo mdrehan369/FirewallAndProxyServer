@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Logout From Network</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            font-family: "Winky Rough", sans-serif;
+            font-optical-sizing: auto;
+            font-style: normal;
+        }
+
+        body {
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #centerdiv {
+            width: 25vw;
+            height: 30vh;
+            background-color: #f7f7f7;
+            border: 1px solid #e6e6e6;
+            padding: 2%;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            flex-direction: column;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        div {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: start;
+            justify-content: center;
+            gap: 3px;
+        }
+
+        input {
+            width: 100%;
+            padding: 10px 5px;
+            border: 1px solid #c6c6c6;
+            border-radius: 5px;
+        }
+
+        label {
+            font-size: 0.95em;
+            font-weight: 500;
+            color: #383838;
+        }
+
+        button {
+            padding: 10px 8px;
+            font-size: 1.03em;
+            background-color: #383838;
+            color: white;
+            border: 1px solid black;
+            width: 100%;
+            border-radius: 3px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: all;
+            transition-duration: 200ms;
+        }
+
+        button:hover {
+            background-color: transparent;
+            color: #383838;
+        }
+
+        #error {
+          width: 100%;
+          background-color: rgb(255, 202, 202);
+          color: red;
+          padding: 10px 4px;
+          text-align: center;
+          text-transform: uppercase;
+          font-size: small;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+
+        #success {
+          width: 100%;
+          background-color: rgb(170, 255, 179);
+          color: green;
+          padding: 10px 4px;
+          text-align: center;
+          text-transform: uppercase;
+          font-size: small;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+
+        .info {
+          width: 100%;
+          padding: 4px 12px;
+          display: flex;
+          flex-direction: row;
+          align-items: center;
+          justify-content: space-between;
+        }
+    </style>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Winky+Rough:ital,wght@0,300..900;1,300..900&display=swap" rel="stylesheet">
+  </head>
+  <body>
+    <form id="centerdiv" action="/logout" method="post" >
+      {% if employee %}
+      <div class="info">
+        <span>Corporate ID</span>
+        <span>{{employee.corporate_id}}</span>
+      </div>
+
+      <div class="info">
+        <span>Name</span>
+        <span>{{employee.fullname}}</span>
+      </div>
+
+      <div class="info">
+        <span>Email</span>
+        <span>{{employee.email}}</span>
+      </div>
+
+      <div class="info">
+        <span>Role</span>
+        <span>{{employee.role}}</span>
+      </div>
+
+      <div class="info">
+        <span>System IP</span>
+        <span>{{system_ip}}</span>
+      </div>
+      {% endif %}
+
+      {% if error %}
+        <div id="error">{{error}}</div>
+      {% endif %}
+      {% if success %}
+        <div id="success">Logged Out Successfully!</div>
+      {% endif %}
+      <button type="submit">LOGOUT</button>
+    </form>
+  </body>
+</html>
