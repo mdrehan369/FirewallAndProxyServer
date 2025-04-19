@@ -1,0 +1,7 @@
+import enum
+
+class ActionMethod(enum.Enum):
+
+    CHECK_EMPLOYEE_STATUS = "CHECK_EMPLOYEE_STATUS"
+    ADD_REQUEST = "ADD_REQUEST"
+    ADD_RESPONSE = "ADD_RESPONSE"

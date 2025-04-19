@@ -3,6 +3,9 @@ from sqlalchemy.orm import sessionmaker
 # from models import Employee, Response, Request, DbSession
 from ..models.DbSession import DbSession
 from ..models.Employee import Employee
+from ..models.Request import Request
+from ..models.Response import Response
+from ..models.HttpMethod import HttpMethod
 from datetime import datetime
 
 import os
@@ -29,6 +32,17 @@ class DbHelper():
         print("Database created!")
         print("DB Helper Initialized!")
 
+    def _findCurrSession(self, system_ip):
+        currTime = datetime.now()
+        date = currTime.day
+        month = currTime.month
+        year = currTime.year
+
+        with self.session() as session:
+            existingSession = session.query(DbSession).filter(DbSession.system_ip == system_ip, DbSession.loggedin_at >= f"{year}-{month}-{date} 00:00:00", DbSession.did_logged_out == False).first()
+            return existingSession
+
+
     def checkEmployeeSession(self, system_ip):
         currTime = datetime.now()
         date = currTime.day
@@ -37,7 +51,6 @@ class DbHelper():
 
         with self.session() as session:
             existingSession = session.query(DbSession).filter(DbSession.system_ip == system_ip, DbSession.loggedin_at >= f"{year}-{month}-{date} 00:00:00", DbSession.did_logged_out == False).all()
-            print(existingSession)
             if(len(existingSession) == 0):
                 return CustomResponse(success=False, data={ "status": False }).toJson()
             return CustomResponse(success=True, data={ "status": True }).toJson()
@@ -101,3 +114,26 @@ class DbHelper():
             
             session.commit()
             return CustomResponse()
+        
+    def addRequest(self, cookies: str, headers: str, data: str, url: str, method: HttpMethod, system_ip: str):
+        existingSession = self._findCurrSession(system_ip)
+        if existingSession is None:
+            return CustomResponse(success=False, message="No Session Found!")
+        with self.session() as session:
+            session.add(Request(cookies=cookies, headers=headers, data=data, url=url, method=method, session_id=existingSession.id))
+            session.commit()
+        return CustomResponse()
+    
+    def addResponse(self, cookies: str, headers: str, data: str, url: str, method: HttpMethod, system_ip: str):
+        existingSession = self._findCurrSession(system_ip)
+        if existingSession is None:
+            return CustomResponse(success=False, message="No Session Found!")
+        
+        with self.session() as session:
+            request = session.query(Request).where(Request.url == url, Request.method == method, Request.session_id == existingSession.id, Request.response == None).first()
+            if request is None:
+                return CustomResponse(success=False, message="No Request Found!")
+            response = Response(cookies=cookies, headers=headers, data=data, url=url, method=method, session_id=existingSession.id, request=request)
+            session.add(response)
+            session.commit()
+        return CustomResponse()

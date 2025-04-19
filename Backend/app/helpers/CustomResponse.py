@@ -15,4 +15,5 @@ class CustomResponse:
     def toJson(self):
         return json.dumps({ "status": self.status, "success": self.success, "data": self.data, "message": self.message })
     
-    
+    def __str__(self):
+        return self.toJson()

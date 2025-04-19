@@ -1,4 +1,4 @@
-from sqlalchemy import String, DateTime, Integer, ForeignKey, Enum
+from sqlalchemy import DateTime, Integer, ForeignKey, Enum, Text
 from sqlalchemy.orm import mapped_column, relationship
 import datetime
 from . import ModelBase
@@ -10,10 +10,10 @@ class Request(ModelBase):
 
     id = mapped_column(Integer(), primary_key=True, autoincrement=True)
     session_id = mapped_column(Integer(), ForeignKey("sessions.id"))
-    cookies = mapped_column(String(1000))
-    headers = mapped_column(String(1000))
-    data = mapped_column(String(1000))
-    url = mapped_column(String(150))
+    cookies = mapped_column(Text())
+    headers = mapped_column(Text())
+    data = mapped_column(Text())
+    url = mapped_column(Text())
     time = mapped_column(DateTime(), default=datetime.datetime.now)
     method = mapped_column(Enum(HttpMethod), default=HttpMethod.GET)
 

@@ -1,6 +1,6 @@
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
-from .modules.Auth import authRouter
+from .modules.Auth import router as authRouter
 
 import json
 from .utils import dbHelperInstance
@@ -26,6 +26,16 @@ async def websocket_endpoint(websocket: WebSocket):
             if(data["method"] == "CHECK_EMPLOYEE_STATUS"):
                 session = dbHelperInstance.checkEmployeeSession(data["data"]["system_ip"])
                 await websocket.send_text(session)
+
+            elif(data["method"] == "ADD_REQUEST"):
+                requestData = data["data"]
+                response = dbHelperInstance.addRequest(cookies=requestData["cookies"], headers=requestData["headers"], data=requestData["data"], method=requestData["method"], system_ip=requestData["system_ip"], url=requestData["url"])
+                print(response)
+
+            elif(data["method"] == "ADD_RESPONSE"):
+                responseData = data["data"]
+                response = dbHelperInstance.addResponse(cookies=responseData["cookies"], headers=responseData["headers"], data=responseData["data"], method=responseData["method"], system_ip=responseData["system_ip"], url=responseData["url"])
+                print(response)
 
     except WebSocketDisconnect:
         print(f"Client left the chat")
