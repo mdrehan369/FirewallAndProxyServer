@@ -1,15 +1,11 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono, IBM_Plex_Sans } from "next/font/google";
 import "./globals.css";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { AppSidebar } from "@/components/sidebar/AppSidebar";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+const ibm_plex_sans = IBM_Plex_Sans({
+  weight: "300"
 });
 
 export const metadata: Metadata = {
@@ -25,9 +21,15 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${ibm_plex_sans.className} antialiased dark`}
       >
-        {children}
+        <SidebarProvider>
+          <AppSidebar />
+          <main>
+            {/* <SidebarTrigger /> */}
+            {children}
+          </main>
+        </SidebarProvider>
       </body>
     </html>
   );

@@ -37,7 +37,7 @@ class Server:
 
         self.ws.send(json.dumps(message_dict))
 
-    @errorHandler
+    # @errorHandler
     def request(self, flow: HTTPFlow):
         ua = flow.request.headers.get("User-Agent", "")
         accept = flow.request.headers.get("Accept", "")
@@ -53,7 +53,8 @@ class Server:
 
         if "Mozilla" in ua and "text/html" in accept and sec_fetch:
             self._sendWsMessage(ActionMethod.CHECK_EMPLOYEE_STATUS, system_ip=flow.client_conn.address[0])
-            isEmployeeLoggedIn = json.loads(self.ws.recv(10))
+            data = self.ws.recv(10)
+            isEmployeeLoggedIn = json.loads(data)
 
             if not isEmployeeLoggedIn["data"]["status"]:
                 self.logger.info(f"Unauthorized Request Incoming: Redirecting To Login Page")
@@ -63,6 +64,7 @@ class Server:
                 flow.request.scheme = "http"
                 flow.request.path = "/login"
                 flow.request.cookies.add("system_ip", flow.client_conn.address[0])
+                # flow.request.method = "GET"
             else:
                 cookies = ""
                 headers = ""
