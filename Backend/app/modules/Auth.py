@@ -8,7 +8,6 @@ router = APIRouter()
 
 @router.get("/login", response_class=HTMLResponse)
 async def login(req: Request):
-    print("aaya h")
     return templates.TemplateResponse(
         request=req, name="Login.html"
     )

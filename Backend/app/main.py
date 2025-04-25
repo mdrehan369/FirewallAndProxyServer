@@ -1,6 +1,7 @@
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from .modules.Auth import router as authRouter
+from .modules.Log import router as logRouter
 import logging
 import json
 from .utils import dbHelperInstance
@@ -50,6 +51,7 @@ class ConnectionManager:
 manager = ConnectionManager()
 
 app.include_router(authRouter)
+app.include_router(logRouter)
 
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
@@ -69,6 +71,7 @@ async def websocket_endpoint(websocket: WebSocket):
                 await manager.send_logs({
                     "method": "LOGS",
                     "data": {
+                    "id": response.data,
                     "cookies": requestData["cookies"],
                     "headers": requestData["headers"],
                     "data": requestData["data"],
@@ -87,6 +90,7 @@ async def websocket_endpoint(websocket: WebSocket):
                 await manager.send_logs({
                     "method": "LOGS",
                     "data": {
+                    "id": response.data,
                     "cookies": responseData["cookies"],
                     "headers": responseData["headers"],
                     "data": responseData["data"],

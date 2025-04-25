@@ -6,12 +6,17 @@ import { ILog } from "@/types/logs";
 import { formatDateTime } from "@/utils/formatDatetime";
 import { getRandomColor } from "@/utils/randomColorGenerator";
 import { ChevronRight } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
 export default function Home() {
   const socket = useRef<WebSocket | null>(null);
   const [logs, setLogs] = useState<ILog[]>([]);
   const [colors, setColors] = useState<Record<string, string>>({});
+  const router = useRouter()
+  const logbox = typeof window !== 'undefined' && document.getElementById("logbox")
+  if(logbox)
+    logbox.scrollTop = logbox.scrollHeight + 1000
 
   useEffect(() => {
     if (!socket.current) {
@@ -39,7 +44,6 @@ export default function Home() {
             });
           }
         }
-        // console.log(Object.keys(jsonMessage))
       } catch (error) {
         console.log(error);
       }
@@ -52,10 +56,11 @@ export default function Home() {
 
   return (
     <Container className="flex items-center justify-center">
-      <div className="text-white bg-white/10 w-[95%] h-[95%] overflow-y-scroll rounded-xl p-10 flex flex-col items-center justify-start gap-0">
-        {logs.map(({ system_ip, url, method, type, time }, index) => (
+      <div id="logbox" className="text-white bg-white/10 w-[95%] h-[95%] overflow-y-scroll rounded-xl p-10 flex flex-col items-center justify-start gap-0">
+        {logs.map(({ system_ip, url, method, type, time, id }, index) => (
           <div
             key={index}
+            onClick={() => router.push(`/log/${id}?type=${type}`)}
             className="flex items-center group justify-start gap-3 w-full hover:bg-white/15 transition-colors duration-300 p-2 rounded-md cursor-pointer"
           >
             <Badge>{formatDateTime(time)}</Badge>

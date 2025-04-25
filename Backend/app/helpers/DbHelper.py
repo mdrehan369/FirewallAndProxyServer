@@ -24,7 +24,7 @@ class DbHelper():
 
     def __init__(self):
         self.databaseUrl = os.getenv("DATABASE_URL")
-        self.engine = create_engine(self.databaseUrl, echo=True)
+        self.engine = create_engine(self.databaseUrl, echo=False)
         ModelBase.metadata.create_all(self.engine)
 
         self.session = sessionmaker(bind=self.engine)
@@ -119,16 +119,21 @@ class DbHelper():
         existingSession = self._findCurrSession(system_ip)
         if existingSession is None:
             return CustomResponse(success=False, message="No Session Found!")
+        # request = None
+        id = 10
         with self.session() as session:
-            session.add(Request(cookies=cookies, headers=headers, data=data, url=url, method=method, session_id=existingSession.id))
+            request = Request(cookies=cookies, headers=headers, data=data, url=url, method=method, session_id=existingSession.id)
+            session.add(request)
             session.commit()
-        return CustomResponse()
+            id = request.id
+        return CustomResponse(data=id)
     
     def addResponse(self, cookies: str, headers: str, data: str, url: str, method: HttpMethod, system_ip: str):
         existingSession = self._findCurrSession(system_ip)
         if existingSession is None:
             return CustomResponse(success=False, message="No Session Found!")
-        
+        # response = None
+        id = None
         with self.session() as session:
             request = session.query(Request).where(Request.url == url, Request.method == method, Request.session_id == existingSession.id, Request.response == None).first()
             if request is None:
@@ -136,4 +141,35 @@ class DbHelper():
             response = Response(cookies=cookies, headers=headers, data=data, url=url, method=method, session_id=existingSession.id, request=request)
             session.add(response)
             session.commit()
-        return CustomResponse()
+            id = response.id
+        return CustomResponse(data=id)
+    
+    def getRequestById(self, id: str):
+        if id is None:
+            return CustomResponse(success=False, message="No ID Found!")
+        
+        with self.session() as session:
+            request = session.query(Request).where(Request.id == id).first()
+            # Lazy Loading Other Tables Data
+            request.session
+            request.response
+            request.response.session
+            request.session.employee
+            if request is None:
+                return CustomResponse(status=404, message="Request Not Found!", success=False)
+            return request
+        
+    def getResponseById(self, id: str):
+        if id is None:
+            return CustomResponse(success=False, message="No ID Found!")
+        
+        with self.session() as session:
+            response = session.query(Response).where(Response.id == id).first()
+            # Lazy Loading Other Tables Data
+            response.session
+            response.request
+            response.request.session
+            response.session.employee
+            if response is None:
+                return CustomResponse(status=404, message="Response Not Found!", success=False)
+            return response

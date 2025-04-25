@@ -70,10 +70,10 @@ class Server:
                 headers = ""
 
                 for k, v in flow.request.cookies.items():
-                    cookies += f"{k}:{v},"
+                    cookies += f"{k}:{v}__n__"
 
                 for k, v in flow.request.headers.items():
-                    headers += f"{k}:{v},"
+                    headers += f"{k}:{v}__n__"
 
 
                 self._sendWsMessage(ActionMethod.ADD_REQUEST, system_ip=flow.client_conn.address[0], cookies=cookies, headers=headers, url=flow.request.pretty_url, data=flow.request.text, method=flow.request.method)
@@ -89,10 +89,10 @@ class Server:
             headers = ""
 
             for k, v in flow.response.cookies.items():
-                    cookies += f"{k}:{v},"
+                    cookies += f"{k}:{v}__n__"
 
             for k, v in flow.response.headers.items():
-                    headers += f"{k}:{v},"
+                    headers += f"{k}:{v}__n__"
 
             self._sendWsMessage(ActionMethod.ADD_RESPONSE, system_ip=flow.client_conn.address[0], cookies=cookies, headers=headers, url=flow.request.pretty_url, data=flow.request.text, method=flow.request.method)
 

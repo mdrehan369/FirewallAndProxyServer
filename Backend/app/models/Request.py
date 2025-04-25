@@ -17,5 +17,5 @@ class Request(ModelBase):
     time = mapped_column(DateTime(), default=datetime.datetime.now)
     method = mapped_column(Enum(HttpMethod), default=HttpMethod.GET)
 
-    response = relationship("Response", back_populates="request")
+    response = relationship("Response", back_populates="request", uselist=False)
     session = relationship("DbSession", back_populates="requests", uselist=False)

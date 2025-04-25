@@ -1,4 +1,5 @@
 export interface ILog {
+  id: string;
   method: string;
   url: string;
   cookies: string;
