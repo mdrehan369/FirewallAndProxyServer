@@ -4,7 +4,7 @@ from .modules.Auth import router as authRouter
 from .modules.Log import router as logRouter
 import logging
 import json
-from .utils import dbHelperInstance
+from .utils import dbHelperInstance, redisHelperInstance
 from typing import List, Dict, Optional
 from datetime import datetime
 
@@ -82,26 +82,30 @@ async def websocket_endpoint(websocket: WebSocket):
                     "time": datetime.now().__str__()
                 }
                 })
+                redisHelperInstance.addRecentRequest(system_ip=requestData["system_ip"], url=requestData["url"])
                 print(response)
 
             elif(data["method"] == "ADD_RESPONSE"):
                 responseData = data["data"]
-                response = dbHelperInstance.addResponse(cookies=responseData["cookies"], headers=responseData["headers"], data=responseData["data"], method=responseData["method"], system_ip=responseData["system_ip"], url=responseData["url"])
-                await manager.send_logs({
-                    "method": "LOGS",
-                    "data": {
-                    "id": response.data,
-                    "cookies": responseData["cookies"],
-                    "headers": responseData["headers"],
-                    "data": responseData["data"],
-                    "method": responseData["method"],
-                    "system_ip": responseData["system_ip"],
-                    "url": responseData["url"],
-                    "type": "Response",
-                    "time": datetime.now().__str__()
-                }
-                })
-                print(response)
+                isRequestCached = redisHelperInstance.checkRecentRequest(system_ip=responseData["system_ip"], url=responseData["url"])
+                if isRequestCached:
+                    print("cache hit for response!")
+                    response = dbHelperInstance.addResponse(cookies=responseData["cookies"], headers=responseData["headers"], data=responseData["data"], method=responseData["method"], system_ip=responseData["system_ip"], url=responseData["url"])
+                    await manager.send_logs({
+                        "method": "LOGS",
+                        "data": {
+                        "id": response.data,
+                        "cookies": responseData["cookies"],
+                        "headers": responseData["headers"],
+                        "data": responseData["data"],
+                        "method": responseData["method"],
+                        "system_ip": responseData["system_ip"],
+                        "url": responseData["url"],
+                        "type": "Response",
+                        "time": datetime.now().__str__()
+                    }
+                    })
+                    print(response)
 
             elif(data["method"] == "GET_LOGS"):
                 manager.add_to_logs_room(websocket)

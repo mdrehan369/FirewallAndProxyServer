@@ -39,9 +39,20 @@ class Server:
 
     # @errorHandler
     def request(self, flow: HTTPFlow):
-        ua = flow.request.headers.get("User-Agent", "")
-        accept = flow.request.headers.get("Accept", "")
-        sec_fetch = flow.request.headers.get("Sec-Fetch-Site")
+        # ua = flow.request.headers.get("User-Agent", "")
+        # accept = flow.request.headers.get("Accept", "")
+        # sec_fetch = flow.request.headers.get("Sec-Fetch-Site")
+        headers = flow.request.headers
+        is_user_initiated = False
+
+        # Check for Sec-Fetch-User
+        if headers.get('Sec-Fetch-User', '') == '?1':
+            is_user_initiated = True
+        # Optionally check other heuristics
+        elif flow.request.method == "GET" and "html" in headers.get("Accept", ""):
+            if not headers.get("Referer"):
+                is_user_initiated = True
+
 
         if(any(p.match(flow.request.pretty_url) for p in ad_patterns)):
                     flow.response = http.Response.make(
@@ -51,7 +62,8 @@ class Server:
                 )
                     self.logger.info(f"Blocked ad request: {flow.request.pretty_url}")
 
-        if "Mozilla" in ua and "text/html" in accept and sec_fetch:
+        # if "Mozilla" in ua and "text/html" in accept and sec_fetch:
+        if is_user_initiated:
             self._sendWsMessage(ActionMethod.CHECK_EMPLOYEE_STATUS, system_ip=flow.client_conn.address[0])
             data = self.ws.recv(10)
             isEmployeeLoggedIn = json.loads(data)
