@@ -1,4 +1,4 @@
-from sqlalchemy import create_engine, update
+from sqlalchemy import create_engine, update, or_
 from sqlalchemy.orm import sessionmaker
 # from models import Employee, Response, Request, DbSession
 from ..models.DbSession import DbSession
@@ -13,7 +13,7 @@ from dotenv import load_dotenv
 from ..models import ModelBase
 
 from .CustomResponse import CustomResponse
-
+from ..types.EmployeePost import EmployeePostBody
 
 load_dotenv()
 class DbHelper():
@@ -173,3 +173,21 @@ class DbHelper():
             if response is None:
                 return CustomResponse(status=404, message="Response Not Found!", success=False)
             return response
+        
+    def getAllEmployees(self, page: int, limit: int, search: str):
+        with self.session() as session:
+            query = session.query(Employee)
+            if search != "":
+                query = query.filter(or_(Employee.corporate_id.startswith(f"{search}"), Employee.fullname.startswith(f"{search}"), Employee.email.startswith(f"{search}")))
+                
+            employees = query.offset((page-1)*limit).limit(limit).all()
+            return CustomResponse(data=employees)
+        
+    def addEmployee(self, employee: EmployeePostBody):
+        with self.session() as session:
+            isEmployeeExists = session.query(Employee).filter(Employee.email == employee.email).first()
+            if isEmployeeExists is not None:
+                return CustomResponse(success=False, message="Employee Already Exists")
+            session.add(Employee(email=employee.email, corporate_password=employee.corporate_password, role=employee.role, fullname=employee.fullname))
+            session.commit()
+            return CustomResponse()

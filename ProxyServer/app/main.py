@@ -39,9 +39,6 @@ class Server:
 
     # @errorHandler
     def request(self, flow: HTTPFlow):
-        # ua = flow.request.headers.get("User-Agent", "")
-        # accept = flow.request.headers.get("Accept", "")
-        # sec_fetch = flow.request.headers.get("Sec-Fetch-Site")
         headers = flow.request.headers
         is_user_initiated = False
 
