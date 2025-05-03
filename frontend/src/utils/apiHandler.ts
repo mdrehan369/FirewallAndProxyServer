@@ -1,4 +1,3 @@
-import { ILog } from "@/types/logs"
 import { axiosInstance } from "./axiosInstance"
 import { IRequest } from "@/types/Request"
 import { IResponse } from "@/types/Response"
@@ -36,10 +35,12 @@ class ApiHandler {
     }
     static async addEmployee(employee: EmployeeFormValues) {
         return this.asyncHandler(async () => {
-            const response = await axiosInstance.post("/employee", employee)
-            console.log("request gone")
-            if(response.status == 400) throw new Error("User Already Exists")
-            return "Done"
+            return await axiosInstance.post("/employee", employee)
+        })
+    }
+    static async deleteEmployee(id: string) {
+        return this.asyncHandler(async () => {
+            return await axiosInstance.delete(`/employee/${id}`)
         })
     }
 }

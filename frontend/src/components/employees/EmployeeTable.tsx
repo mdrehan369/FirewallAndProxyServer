@@ -9,16 +9,17 @@ import {
     TableRow,
 } from "@/components/ui/table"
 
-import { ChangeEvent, useEffect, useRef, useState } from "react"
-import { useQuery } from "@tanstack/react-query"
+import { useState } from "react"
+import { useMutation, useQuery } from "@tanstack/react-query"
 import { ApiHandler } from "@/utils/apiHandler"
 import { formatDateTime } from "@/utils/formatDatetime"
 import { Input } from "../ui/input"
-import { Search } from "lucide-react"
+import { Search, Trash2 } from "lucide-react"
 import { CustomPagination } from "../Pagination"
 import { useDebounce } from "@/hooks/useDebounce"
 import { Button } from "../ui/button"
 import { useRouter } from "next/navigation"
+import { toast } from "sonner"
 
 export default function EmployeeTable() {
     const [page, setPage] = useState<number>(1)
@@ -33,6 +34,18 @@ export default function EmployeeTable() {
                 employee.corporate_password = ""
                 return employee
             }),
+    })
+
+    const { mutate } = useMutation({
+        mutationFn: (id: string) => ApiHandler.deleteEmployee(id),
+        onSuccess() {
+            toast("Employee Deleted Successfully!")
+            refetch()
+        },
+        onError(err) {
+            console.log(err)
+            toast("Some Error Occured!")
+        }
     })
     const router = useRouter()
 
@@ -82,7 +95,7 @@ export default function EmployeeTable() {
                             email,
                             joined_at,
                         }) => (
-                            <TableRow key={corporate_id}>
+                            <TableRow key={corporate_id} className="group relative h-14">
                                 <TableCell className="font-medium">
                                     {corporate_id}
                                 </TableCell>
@@ -91,6 +104,9 @@ export default function EmployeeTable() {
                                 <TableCell className="">{email}</TableCell>
                                 <TableCell className="">
                                     {formatDateTime(joined_at)}
+                                </TableCell>
+                                <TableCell>
+                                    <Trash2 onClick={() => mutate(corporate_id)} className="hidden group-hover:block absolute right-4 hover:bg-red-300 transition-colors top-[50%] translate-y-[-50%] bg-red-200 cursor-pointer text-red-700 p-1 size-8 rounded-sm" />
                                 </TableCell>
                             </TableRow>
                         )

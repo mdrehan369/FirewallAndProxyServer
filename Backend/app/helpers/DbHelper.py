@@ -187,7 +187,20 @@ class DbHelper():
         with self.session() as session:
             isEmployeeExists = session.query(Employee).filter(Employee.email == employee.email).first()
             if isEmployeeExists is not None:
-                return CustomResponse(success=False, message="Employee Already Exists")
+                return CustomResponse(success=False, message="Employee Already Exists", status=400)
             session.add(Employee(email=employee.email, corporate_password=employee.corporate_password, role=employee.role, fullname=employee.fullname))
             session.commit()
             return CustomResponse()
+        
+    def deleteEmployee(self, id: str):
+        if id == "":
+            return CustomResponse(success=False, message="Invalid ID", status=400)
+        with self.session() as session:
+            employee = session.query(Employee).filter(Employee.corporate_id == id).first()
+            if employee is None:
+                return CustomResponse(success=False, message="No Employee Found", status=404)
+            
+            session.delete(employee)
+            session.commit()
+
+        return CustomResponse()

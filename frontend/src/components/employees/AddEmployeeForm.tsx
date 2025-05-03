@@ -46,13 +46,16 @@ export default function AddEmployeeForm() {
         mutationFn: (employee: EmployeeFormValues) =>
             ApiHandler.addEmployee(employee),
         onError: (error) => {
-          toast(error.message)
-          router.push("/employees")
+            toast(error.message)
+            router.push("/employees")
         },
-        onSuccess: () => {
-          toast("Employee Added Successfully!")
-          router.push("/employees")
-        }
+        onSuccess: (data) => {
+            if (data.data.status == 400) toast("Employee Already Exists!")
+            else {
+                toast("Employee Added Successfully!")
+                router.push("/employees")
+            }
+        },
     })
 
     const onSubmit = (values: EmployeeFormValues) => {
