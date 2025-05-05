@@ -3,6 +3,7 @@ import { IRequest } from "@/types/Request"
 import { IResponse } from "@/types/Response"
 import { IEmployee } from "@/types/Employee"
 import { EmployeeFormValues } from "@/schemas/EmployeePostBody"
+import { ISession } from "@/types/Session"
 
 class ApiHandler {
     
@@ -41,6 +42,14 @@ class ApiHandler {
     static async deleteEmployee(id: string) {
         return this.asyncHandler(async () => {
             return await axiosInstance.delete(`/employee/${id}`)
+        })
+    }
+    static async getAllSessions(page: number = 1, limit: number = 15): Promise<{ "active": ISession[], "inactive": ISession[] }> {
+        return this.asyncHandler(async () => {
+            if(isNaN(page) || isNaN(limit) || Number(page) < 1 || Number(limit) < 1)
+                throw new Error("Invalid Request Params")
+            const response = await axiosInstance.get('/session', { params: { page, limit } })
+            return response.data.data
         })
     }
 }

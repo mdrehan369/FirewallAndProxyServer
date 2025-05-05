@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from .modules.Auth import router as authRouter
 from .modules.Log import router as logRouter
 from .modules.Employee import router as employeeRouter
+from .modules.Session import router as sessionRouter
 import logging
 import json
 from .utils import dbHelperInstance, redisHelperInstance
@@ -54,6 +55,7 @@ manager = ConnectionManager()
 app.include_router(authRouter)
 app.include_router(logRouter)
 app.include_router(employeeRouter)
+app.include_router(sessionRouter)
 
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):

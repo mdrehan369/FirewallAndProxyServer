@@ -26,7 +26,7 @@ export default function EmployeeTable() {
     const [limit, setLimit] = useState(12)
     const [search, setSearch] = useState("")
     const debounce = useDebounce(search, 1000)
-    const { data, isPending, isError, refetch } = useQuery({
+    const { data, refetch } = useQuery({
         queryKey: ["employees", page, debounce],
         queryFn: () => ApiHandler.getAllEmployees(page, limit, search),
         select: (data) =>
@@ -51,8 +51,8 @@ export default function EmployeeTable() {
 
     return (
         <div className="w-[90%] flex flex-col items-start justify-start h-[90%]">
-            <h2 className="text-3xl font-bold bg-white/10 py-2 px-6 w-fit rounded-xl my-4">
-                Employees
+            <h2 className="text-2xl font-bold bg-white/10 py-2 px-6 w-fit rounded-xl my-4">
+                EMPLOYEES
             </h2>
             <div className="my-3 flex items-center justify-between w-full">
                 <div className="flex items-center justify-start gap-2">

@@ -1,5 +1,5 @@
-from sqlalchemy import create_engine, update, or_
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy import create_engine, update, or_, desc
+from sqlalchemy.orm import sessionmaker, selectinload
 # from models import Employee, Response, Request, DbSession
 from ..models.DbSession import DbSession
 from ..models.Employee import Employee
@@ -7,6 +7,7 @@ from ..models.Request import Request
 from ..models.Response import Response
 from ..models.HttpMethod import HttpMethod
 from datetime import datetime
+from datetime import timedelta
 
 import os
 from dotenv import load_dotenv
@@ -204,3 +205,17 @@ class DbHelper():
             session.commit()
 
         return CustomResponse()
+    
+    def getAllSessions(self, page: int = 1, limit: int = 15):
+        currTime = datetime.now()
+        date = currTime.day
+        month = currTime.month
+        year = currTime.year
+
+        with self.session() as session:
+            allSessions = {}
+            allSessions["active"] = session.query(DbSession).filter(DbSession.loggedin_at >= f"{year}-{month}-{date} 00:00:00", DbSession.did_logged_out == False).order_by(desc(DbSession.loggedin_at)).offset((page-1)*limit).limit(limit).options(selectinload(DbSession.employee)).all()
+
+            allSessions["inactive"] = session.query(DbSession).filter(or_(DbSession.loggedin_at < f"{year}-{month}-{date} 00:00:00", DbSession.did_logged_out == True)).order_by(desc(DbSession.loggedin_at)).offset((page-1)*limit).limit(limit).options(selectinload(DbSession.employee)).all()
+
+            return allSessions
