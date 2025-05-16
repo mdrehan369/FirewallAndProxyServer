@@ -7,6 +7,7 @@ import { AppSidebar } from "@/components/sidebar/AppSidebar"
 import React from "react"
 import { ClientProvider } from "./ClientProvider"
 import { Toaster } from "sonner"
+import { SocketProvider } from "@/components/SocketProvider"
 
 const ibm_plex_sans = IBM_Plex_Sans({
     weight: "300",
@@ -27,6 +28,7 @@ export default function RootLayout({
             <body className={`${ibm_plex_sans.className} antialiased dark`}>
                 <ClientProvider>
                     <SidebarProvider>
+                        <SocketProvider />
                         <AppSidebar />
                         <main>{children}</main>
                         <Toaster />
