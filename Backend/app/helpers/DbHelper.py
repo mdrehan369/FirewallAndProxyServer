@@ -7,7 +7,6 @@ from ..models.Request import Request
 from ..models.Response import Response
 from ..models.HttpMethod import HttpMethod
 from datetime import datetime
-from datetime import timedelta
 
 import os
 from dotenv import load_dotenv
@@ -21,11 +20,11 @@ class DbHelper():
 
     databaseUrl = ""
     engine = None
-    session = None
+    # session: sessionmaker | None = None
 
     def __init__(self):
         self.databaseUrl = os.getenv("DATABASE_URL")
-        self.engine = create_engine(self.databaseUrl, echo=False)
+        self.engine = create_engine(self.databaseUrl or "", echo=False)
         ModelBase.metadata.create_all(self.engine)
 
         self.session = sessionmaker(bind=self.engine)
@@ -151,13 +150,13 @@ class DbHelper():
         
         with self.session() as session:
             request = session.query(Request).where(Request.id == id).first()
+            if request is None:
+                return CustomResponse(status=404, message="Request Not Found!", success=False)
             # Lazy Loading Other Tables Data
             request.session
             request.response
             request.response.session
             request.session.employee
-            if request is None:
-                return CustomResponse(status=404, message="Request Not Found!", success=False)
             return request
         
     def getResponseById(self, id: str):
@@ -166,13 +165,13 @@ class DbHelper():
         
         with self.session() as session:
             response = session.query(Response).where(Response.id == id).first()
+            if response is None:
+                return CustomResponse(status=404, message="Response Not Found!", success=False)
             # Lazy Loading Other Tables Data
             response.session
             response.request
             response.request.session
             response.session.employee
-            if response is None:
-                return CustomResponse(status=404, message="Response Not Found!", success=False)
             return response
         
     def getAllEmployees(self, page: int, limit: int, search: str):
@@ -219,3 +218,15 @@ class DbHelper():
             allSessions["inactive"] = session.query(DbSession).filter(or_(DbSession.loggedin_at < f"{year}-{month}-{date} 00:00:00", DbSession.did_logged_out == True)).order_by(desc(DbSession.loggedin_at)).offset((page-1)*limit).limit(limit).options(selectinload(DbSession.employee)).all()
 
             return allSessions
+
+    def getSessionsRequest(self, session_id: int):
+        with self.session() as session:
+            dbSession = session.query(DbSession).where(DbSession.id == session_id).first()
+            if dbSession is None:
+                return CustomResponse(status=400, success=False, message="No Session Found")
+            dbSession.employee
+            dbSession.requests
+            dbSession.responses
+            
+            return CustomResponse(data=dbSession)
+

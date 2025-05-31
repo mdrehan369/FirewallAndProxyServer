@@ -7,7 +7,7 @@ from .modules.Session import router as sessionRouter
 import logging
 import json
 from .utils import dbHelperInstance, redisHelperInstance
-from typing import List, Dict, Optional
+from typing import List, Dict
 from datetime import datetime
 
 app = FastAPI()
@@ -21,14 +21,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
 class ConnectionManager:
     def __init__(self):
-        self.active_connections: Dict[str, List[WebSocket]] = {
-            "global": [],
-            "logs": []
-        }
+        self.active_connections: Dict[str, List[WebSocket]] = {"global": [], "logs": []}
 
-    
     async def connect(self, ws: WebSocket):
         try:
             await ws.accept()
@@ -39,9 +36,10 @@ class ConnectionManager:
 
     def disconnect(self, ws: WebSocket):
         self.active_connections["global"].remove(ws)
-        self.active_connections["logs"].remove(ws)
+        if self.active_connections["logs"].count(ws) == 1:
+            self.active_connections["logs"].remove(ws)
         print(f"connections: {len(self.active_connections["global"])}")
-    
+
     def add_to_logs_room(self, ws: WebSocket):
         self.active_connections["logs"].append(ws)
 
@@ -50,6 +48,7 @@ class ConnectionManager:
         for connection in self.active_connections["logs"]:
             await connection.send_json(jsonData)
 
+
 manager = ConnectionManager()
 
 app.include_router(authRouter)
@@ -57,65 +56,96 @@ app.include_router(logRouter)
 app.include_router(employeeRouter)
 app.include_router(sessionRouter)
 
+
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
     await manager.connect(websocket)
-    logger.info(f"{websocket.client.host} got connected!")
     try:
         while True:
             data = await websocket.receive_text()
             data = json.loads(data)
-            if(data["method"] == "CHECK_EMPLOYEE_STATUS"):
-                session = dbHelperInstance.checkEmployeeSession(data["data"]["system_ip"])
-                await websocket.send_text(session)
+            if data["method"] == "CHECK_EMPLOYEE_STATUS":
+                session = dbHelperInstance.checkEmployeeSession(
+                    data["data"]["system_ip"]
+                )
+                isAllowed = redisHelperInstance.isRequestLimitReached(
+                    data["data"]["system_ip"]
+                )
+                await websocket.send_text(
+                    json.dumps(
+                        {
+                            "data": json.loads(session)["data"]["status"],
+                            "isAllowed": isAllowed,
+                        }
+                    )
+                )
 
-            elif(data["method"] == "ADD_REQUEST"):
+            elif data["method"] == "ADD_REQUEST":
                 requestData = data["data"]
-                response = dbHelperInstance.addRequest(cookies=requestData["cookies"], headers=requestData["headers"], data=requestData["data"], method=requestData["method"], system_ip=requestData["system_ip"], url=requestData["url"])
-                await manager.send_logs({
-                    "method": "LOGS",
-                    "data": {
-                    "id": response.data,
-                    "cookies": requestData["cookies"],
-                    "headers": requestData["headers"],
-                    "data": requestData["data"],
-                    "method": requestData["method"],
-                    "system_ip": requestData["system_ip"],
-                    "url": requestData["url"],
-                    "type": "Request",
-                    "time": datetime.now().__str__()
-                }
-                })
-                redisHelperInstance.addRecentRequest(system_ip=requestData["system_ip"], url=requestData["url"])
-                print(response)
-
-            elif(data["method"] == "ADD_RESPONSE"):
-                responseData = data["data"]
-                isRequestCached = redisHelperInstance.checkRecentRequest(system_ip=responseData["system_ip"], url=responseData["url"])
-                if isRequestCached:
-                    print("cache hit for response!")
-                    response = dbHelperInstance.addResponse(cookies=responseData["cookies"], headers=responseData["headers"], data=responseData["data"], method=responseData["method"], system_ip=responseData["system_ip"], url=responseData["url"])
-                    await manager.send_logs({
+                response = dbHelperInstance.addRequest(
+                    cookies=requestData["cookies"],
+                    headers=requestData["headers"],
+                    data=requestData["data"],
+                    method=requestData["method"],
+                    system_ip=requestData["system_ip"],
+                    url=requestData["url"],
+                )
+                await manager.send_logs(
+                    {
                         "method": "LOGS",
                         "data": {
-                        "id": response.data,
-                        "cookies": responseData["cookies"],
-                        "headers": responseData["headers"],
-                        "data": responseData["data"],
-                        "method": responseData["method"],
-                        "system_ip": responseData["system_ip"],
-                        "url": responseData["url"],
-                        "type": "Response",
-                        "time": datetime.now().__str__()
+                            "id": response.data,
+                            "cookies": requestData["cookies"],
+                            "headers": requestData["headers"],
+                            "data": requestData["data"],
+                            "method": requestData["method"],
+                            "system_ip": requestData["system_ip"],
+                            "url": requestData["url"],
+                            "type": "Request",
+                            "time": datetime.now().__str__(),
+                        },
                     }
-                    })
+                )
+                redisHelperInstance.addRecentRequest(
+                    system_ip=requestData["system_ip"], url=requestData["url"]
+                )
+                print(response)
+
+            elif data["method"] == "ADD_RESPONSE":
+                responseData = data["data"]
+                isRequestCached = redisHelperInstance.checkRecentRequest(
+                    system_ip=responseData["system_ip"], url=responseData["url"]
+                )
+                if isRequestCached:
+                    print("cache hit for response!")
+                    response = dbHelperInstance.addResponse(
+                        cookies=responseData["cookies"],
+                        headers=responseData["headers"],
+                        data=responseData["data"],
+                        method=responseData["method"],
+                        system_ip=responseData["system_ip"],
+                        url=responseData["url"],
+                    )
+                    await manager.send_logs(
+                        {
+                            "method": "LOGS",
+                            "data": {
+                                "id": response.data,
+                                "cookies": responseData["cookies"],
+                                "headers": responseData["headers"],
+                                "data": responseData["data"],
+                                "method": responseData["method"],
+                                "system_ip": responseData["system_ip"],
+                                "url": responseData["url"],
+                                "type": "Response",
+                                "time": datetime.now().__str__(),
+                            },
+                        }
+                    )
                     print(response)
 
-            elif(data["method"] == "GET_LOGS"):
+            elif data["method"] == "GET_LOGS":
                 manager.add_to_logs_room(websocket)
-            
 
     except WebSocketDisconnect:
         manager.disconnect(websocket)
-        logger.info(f"{websocket.client.host} got disconnected!")
-

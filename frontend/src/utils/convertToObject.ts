@@ -4,8 +4,8 @@ export function convertToObject(
   keyValueDelimiter: string
 ) {
   const keyValuePair = data.split(delimiter).filter((kv) => kv != "");
-  const obj: Record<string, any> = {};
-  for (let keyValue of keyValuePair) {
+  const obj: Record<string, string> = {};
+  for (const keyValue of keyValuePair) {
     const key = keyValue.split(keyValueDelimiter)[0];
     const value = keyValue
       .split(keyValueDelimiter)

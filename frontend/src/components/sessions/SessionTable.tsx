@@ -14,19 +14,22 @@ import { useQuery } from "@tanstack/react-query"
 import { ApiHandler } from "@/utils/apiHandler"
 import { formatDateTime } from "@/utils/formatDatetime"
 import { CustomPagination } from "../Pagination"
+import { useRouter } from "next/navigation"
 
 export default function SessionTable() {
     const [page, setPage] = useState<number>(1)
-    const [limit, setLimit] = useState(12)
+    const limit = 12
     const { data } = useQuery({
         queryKey: ["sessions", page],
         queryFn: () => ApiHandler.getAllSessions(page, limit),
     })
+    const router = useRouter()
 
     return (
         <div className="w-[90%] flex flex-col items-start justify-start h-[90%]">
             {["active", "inactive"].map((state) => (
-                data?.[state as "active" | "inactive"].length! > 0 &&
+                data &&
+                data[state as "active" | "inactive"].length > 0 &&
                 <div key={state} className="w-full h-full">
                     <h2 className="text-2xl font-bold bg-white/10 py-2 px-6 w-fit rounded-xl my-4">
                         {state.toUpperCase()} SESSIONS
@@ -68,6 +71,7 @@ export default function SessionTable() {
                                     <TableRow
                                         key={id}
                                         className="group relative h-14"
+                                        onClick={() => router.push(`/sessions/${id}`)}
                                     >
                                         <TableCell>#{id}</TableCell>
                                         <TableCell className="font-medium">

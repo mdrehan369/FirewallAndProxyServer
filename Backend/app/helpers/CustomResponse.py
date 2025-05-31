@@ -1,4 +1,5 @@
 import json
+from typing import Any
 
 class CustomResponse:
     status: int
@@ -6,7 +7,7 @@ class CustomResponse:
     data: dict
     message: str
 
-    def __init__(self, status: int = 200, success: bool = True, data: dict = {}, message: str = "Done"):
+    def __init__(self, status: int = 200, success: bool = True, data: Any = {}, message: str = "Done"):
         self.status = status
         self.data = data
         self.message = message

@@ -6,7 +6,7 @@ import { EmployeeFormValues } from "@/schemas/EmployeePostBody"
 import { ISession } from "@/types/Session"
 
 class ApiHandler {
-    
+    /* eslint-disable @typescript-eslint/no-explicit-any */
     private static async asyncHandler(func: () => Promise<any>) {
         try {
             return await func()
@@ -49,6 +49,14 @@ class ApiHandler {
             if(isNaN(page) || isNaN(limit) || Number(page) < 1 || Number(limit) < 1)
                 throw new Error("Invalid Request Params")
             const response = await axiosInstance.get('/session', { params: { page, limit } })
+            return response.data.data
+        })
+    }
+    static async getSessionRequests(session_id: string): Promise<ISession> {
+        return this.asyncHandler(async () => {
+            if(isNaN(parseInt(session_id)))
+                throw new Error("Invalid Session ID")
+            const response = await axiosInstance.get(`/session/${session_id}`)
             return response.data.data
         })
     }

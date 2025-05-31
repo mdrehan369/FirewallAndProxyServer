@@ -11,6 +11,7 @@ import { SocketProvider } from "@/components/SocketProvider"
 
 const ibm_plex_sans = IBM_Plex_Sans({
     weight: "300",
+    subsets: ["cyrillic-ext"]
 })
 
 export const metadata: Metadata = {

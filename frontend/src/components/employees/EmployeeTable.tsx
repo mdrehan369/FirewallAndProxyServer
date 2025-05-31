@@ -23,7 +23,7 @@ import { toast } from "sonner"
 
 export default function EmployeeTable() {
     const [page, setPage] = useState<number>(1)
-    const [limit, setLimit] = useState(12)
+    const limit = 12
     const [search, setSearch] = useState("")
     const debounce = useDebounce(search, 1000)
     const { data, refetch } = useQuery({
