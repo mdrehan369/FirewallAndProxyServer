@@ -22,43 +22,45 @@ async def loginPost(
 
     system_ip = req.cookies.get("system_ip")
     url = req.cookies.get("url")
+    if url is None or system_ip is None:
+        return
     response = dbHelperInstance.loginEmployee(
         corporate_id=corporate_id,
         corporate_password=corporate_password,
         system_ip=system_ip,
     )
-    if response.success == False:
+    if response["success"] == False:
         return templates.TemplateResponse(
-            request=req, name="Login.html", context={"error": response.message}
+            request=req, name="Login.html", context={"error": response["message"]}
         )
     return RedirectResponse(url=url)
 
 
 @router.get("/logout")
 async def logout(req: Request):
-    system_ip = req.client.host
+    system_ip = req.client.host  # type: ignore
     response = dbHelperInstance.getEmployee(system_ip)
-    if response.success:
+    if response["success"]:
         return templates.TemplateResponse(
             request=req,
             name="Logout.html",
-            context={"employee": response.data, "system_ip": system_ip},
+            context={"employee": response["data"], "system_ip": system_ip},
         )
     return templates.TemplateResponse(
-        request=req, name="Logout.html", context={"error": response.message}
+        request=req, name="Logout.html", context={"error": response["message"]}
     )
 
 
 @router.post("/logout")
 async def logoutEmployee(req: Request):
-    system_ip = req.client.host
+    system_ip = req.client.host  # type: ignore
     response = dbHelperInstance.logoutEmployee(system_ip)
-    if response.success:
+    if response["success"]:
         return templates.TemplateResponse(
             request=req, name="Logout.html", context={"success": True}
         )
     return templates.TemplateResponse(
-        request=req, name="Logout.html", context={"error": response.message}
+        request=req, name="Logout.html", context={"error": response["message"]}
     )
 
 
