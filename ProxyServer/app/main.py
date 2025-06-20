@@ -84,6 +84,17 @@ class Server:
                 flow.request.scheme = "http"
                 flow.request.path = "/limit-reached"
             else:
+
+                # Checking if the request is safe of not using virusTotal
+                # self._sendWsMessage(
+                #     actionMethod=ActionMethod.CHECK_IS_REQUEST_SECURE,
+                #     url=flow.request.url,
+                #     system_ip=flow.client_conn.address[0],
+                # )
+                #
+                # data = self.ws.recv(50)
+                # secureStats = json.loads(data)
+
                 cookies = ""
                 headers = ""
 

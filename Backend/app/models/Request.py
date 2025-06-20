@@ -1,8 +1,10 @@
+from pydantic import BaseModel
 from sqlalchemy import DateTime, Integer, ForeignKey, Enum, Text
 from sqlalchemy.orm import mapped_column, relationship
 import datetime
 from . import ModelBase
 from .HttpMethod import HttpMethod
+
 
 class Request(ModelBase):
 
@@ -19,3 +21,14 @@ class Request(ModelBase):
 
     response = relationship("Response", back_populates="request", uselist=False)
     session = relationship("DbSession", back_populates="requests", uselist=False)
+
+
+class RequestOut(BaseModel):
+
+    id: str
+    session_id: str
+    url: str
+
+    class Config:
+        orm_mode = True
+        from_attributes = True

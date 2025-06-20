@@ -1,12 +1,13 @@
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
+from sqlalchemy import true
 from .modules.Auth import router as authRouter
 from .modules.Log import router as logRouter
 from .modules.Employee import router as employeeRouter
 from .modules.Session import router as sessionRouter
 import logging
 import json
-from .utils import dbHelperInstance, redisHelperInstance
+from .utils import dbHelperInstance, redisHelperInstance, apiHandler
 from typing import List, Dict
 from datetime import datetime
 
@@ -71,6 +72,7 @@ async def websocket_endpoint(websocket: WebSocket):
                 isAllowed = redisHelperInstance.isRequestLimitReached(
                     data["data"]["system_ip"]
                 )
+                print(session)
                 await websocket.send_text(
                     json.dumps(
                         {
@@ -144,6 +146,27 @@ async def websocket_endpoint(websocket: WebSocket):
                     )
                     print(response)
 
+            elif data["method"] == "CHECK_IS_REQUEST_SECURE":
+                requestData = data["data"]
+                url = requestData["url"]
+                system_ip = requestData["system_ip"]
+
+                response = apiHandler.checkSecureUrl(url)
+                if response is None:
+                    print("Some Error Occured While Checking")
+
+                    await websocket.send_text(
+                        json.dumps(
+                            {
+                                "success": False,
+                            }
+                        )
+                    )
+                else:
+                    print(response)
+                    await websocket.send_text(
+                        json.dumps({"success": True, "data": response})
+                    )
             elif data["method"] == "GET_LOGS":
                 manager.add_to_logs_room(websocket)
 
