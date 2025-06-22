@@ -43,5 +43,8 @@ class CustomResponse:
             },
         )
 
+    def __getitem__(self, key):
+        return getattr(self, key)
+
     def __str__(self):
         return self.toJson()

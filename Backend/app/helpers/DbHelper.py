@@ -75,7 +75,7 @@ class DbHelper:
 
     def loginEmployee(self, corporate_id, corporate_password, system_ip):
         if corporate_id == "" or corporate_password == "":
-            return CustomResponse(success=False, message="Credentials Missing").toJson()
+            return CustomResponse(success=False, message="Credentials Missing")
         with self.session() as session:
             employee = (
                 session.query(Employee)
@@ -95,7 +95,7 @@ class DbHelper:
 
             return CustomResponse(
                 success=True, message="Session Created Successfully!", status=201
-            ).toJson()
+            )
 
     def getEmployee(self, system_ip: str):
         if system_ip == "":
