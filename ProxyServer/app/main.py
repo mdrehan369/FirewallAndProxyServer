@@ -86,14 +86,39 @@ class Server:
             else:
 
                 # Checking if the request is safe of not using virusTotal
-                # self._sendWsMessage(
-                #     actionMethod=ActionMethod.CHECK_IS_REQUEST_SECURE,
-                #     url=flow.request.url,
-                #     system_ip=flow.client_conn.address[0],
-                # )
-                #
-                # data = self.ws.recv(50)
-                # secureStats = json.loads(data)
+                self._sendWsMessage(
+                    actionMethod=ActionMethod.CHECK_IS_REQUEST_SECURE,
+                    url=flow.request.url,
+                    system_ip=flow.client_conn.address[0],
+                )
+
+                data = self.ws.recv(50)
+                secureStats = json.loads(data)
+                print(secureStats)
+
+                if secureStats["success"]:
+                    if secureStats["status"] == "block":
+                        self.logger.info(
+                            f"Threat Request Incoming: Redirecting to warning page"
+                        )
+                        flow.request.cookies.add("url", flow.request.pretty_url)
+                        flow.request.host = "localhost"
+                        flow.request.port = 8000
+                        flow.request.scheme = "http"
+                        flow.request.path = "/security/threat"
+
+                    elif (
+                        secureStats["status"] == "warn"
+                        or secureStats["status"] == "caution"
+                    ):
+                        self.logger.info(
+                            f"Suspicious Request Incoming: Redirecting to warning page"
+                        )
+                        flow.request.cookies.add("url", flow.request.pretty_url)
+                        flow.request.host = "localhost"
+                        flow.request.port = 8000
+                        flow.request.scheme = "http"
+                        flow.request.path = "/security/warn"
 
                 cookies = ""
                 headers = ""

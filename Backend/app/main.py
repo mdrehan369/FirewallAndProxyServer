@@ -5,6 +5,7 @@ from .modules.Auth import router as authRouter
 from .modules.Log import router as logRouter
 from .modules.Employee import router as employeeRouter
 from .modules.Session import router as sessionRouter
+from .modules.Security import router as securityRouter
 import logging
 import json
 from .utils import dbHelperInstance, redisHelperInstance, apiHandler
@@ -56,6 +57,7 @@ app.include_router(authRouter)
 app.include_router(logRouter)
 app.include_router(employeeRouter)
 app.include_router(sessionRouter)
+app.include_router(securityRouter)
 
 
 @app.websocket("/ws")
@@ -163,9 +165,17 @@ async def websocket_endpoint(websocket: WebSocket):
                         )
                     )
                 else:
-                    print(response)
+                    malicious = response["malicious"]
+                    suspicious = response["suspicious"]
+                    status = "safe"
+                    if malicious >= 3:
+                        status = "block"
+                    elif malicious >= 1 or suspicious >= 3:
+                        status = "warn"
+                    elif suspicious >= 1:
+                        status = "caution"
                     await websocket.send_text(
-                        json.dumps({"success": True, "data": response})
+                        json.dumps({"success": True, "status": status})
                     )
             elif data["method"] == "GET_LOGS":
                 manager.add_to_logs_room(websocket)

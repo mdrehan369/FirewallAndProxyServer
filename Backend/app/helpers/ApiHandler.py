@@ -2,6 +2,7 @@ import enum
 from typing import Any, Optional
 import requests as re
 import os
+import time
 
 
 class HttpMethods(enum.Enum):
@@ -56,10 +57,12 @@ class APIHandler:
 
         if urlScanResponse and urlScanResponse.status_code >= 400:
             print("Error in scanning url")
-            print(urlScanResponse.__dict__)
+            print(urlScanResponse)
             return None
         elif urlScanResponse:
-            id = urlScanResponse.json()["id"]
+            jsonResponse = urlScanResponse.json()
+            print(jsonResponse)
+            id = jsonResponse["data"]["id"]
             scanReportResponse = self._makeRequest(
                 f"{self.virusTotalUrlAnalysesEndpoint}/{id}",
                 HttpMethods.GET,
@@ -68,13 +71,18 @@ class APIHandler:
 
             if scanReportResponse and scanReportResponse.status_code >= 400:
                 print("Error in getting scan report")
-                print(scanReportResponse.__dict__)
+                print(scanReportResponse)
                 return None
 
-            elif scanReportResponse:
-                scanReport = scanReportResponse.json()
-                if scanReport["data"]["attributes"]["status"] == "completed":
-                    return scanReport["data"]["attributes"]["stats"]
-                else:
-                    print("Scan is not completed yet")
-                    return None
+            while True:
+                if scanReportResponse:
+                    scanReport = scanReportResponse.json()
+                    status = scanReport["data"]["attributes"]["status"]
+                    if status == "completed":
+                        return scanReport["data"]["attributes"]["stats"]
+                    elif status == "queued":
+                        time.sleep(1)
+                    else:
+                        print("Some error occured in fetching scan results")
+                        print(scanReport)
+                        return None
